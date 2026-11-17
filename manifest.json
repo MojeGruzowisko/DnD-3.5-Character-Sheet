@@ -1,6 +1,6 @@
 {
-  "name": "D&D 3.5 Karta Postaci",
-  "short_name": "DnD Karta",
+  "name": "D&D 3.5 Character Sheets",
+  "short_name": "D&D 3.5 Vault",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
