@@ -561,25 +561,40 @@
   <!-- JAVASCRIPT -->
   <script id="main-logic">
     let skillsList = [
-      { name: "Akrobatyka (Tumble)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Akrobatyka / Zwinność (Tumble)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
       { name: "Blefowanie (Bluff)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
-      { name: "Ciche Poruszanie (Move Silently)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Ciche Poruszanie Się (Move Silently)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
       { name: "Czarostwo (Spellcraft)", stat: "INT", ranks: 0, misc: 0, isClass: false },
       { name: "Dyplomacja (Diplomacy)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Fałszerstwo (Forging)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Jeździectwo (Ride)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
       { name: "Koncentracja (Concentration)", stat: "CON", ranks: 0, misc: 0, isClass: false },
       { name: "Leczenie (Heal)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
       { name: "Nasłuchiwanie (Listen)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Odcyfrowywanie Zapisków (Decipher Script)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Otwieranie Zamków (Open Lock)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
       { name: "Pływanie (Swim)", stat: "STR", ranks: 0, misc: 0, isClass: false },
+      { name: "Postępowanie ze Zwierzętami (Handle Animal)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Przebieranie (Disguise)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
       { name: "Przeszukiwanie (Search)", stat: "INT", ranks: 0, misc: 0, isClass: false },
       { name: "Rzemiosło (Craft)", stat: "INT", ranks: 0, misc: 0, isClass: false },
       { name: "Skakanie (Jump)", stat: "STR", ranks: 0, misc: 0, isClass: false },
       { name: "Spostrzegawczość (Spot)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Szacowanie (Appraise)", stat: "INT", ranks: 0, misc: 0, isClass: false },
       { name: "Sztuka Przetrwania (Survival)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
       { name: "Ukrywanie Się (Hide)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Unieszkodliwianie Mechanizmów (Disable Device)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Używanie Lin (Use Rope)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Używanie Magicznych Urządzeń (Use Magic Device)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
       { name: "Wiedza (Knowledge)", stat: "INT", ranks: 0, misc: 0, isClass: false },
       { name: "Wspinaczka (Climb)", stat: "STR", ranks: 0, misc: 0, isClass: false },
       { name: "Wyczucie Pobudek (Sense Motive)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
-      { name: "Zastraszanie (Intimidate)", stat: "CHA", ranks: 0, misc: 0, isClass: false }
+      { name: "Występy (Perform)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Wyzwalanie Się (Escape Artist)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Zachowanie Równoważności (Balance)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Zastraszanie (Intimidate)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Zbieranie Informacji (Gather Information)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Zręczna Dłoń (Sleight of Hand)", stat: "DEX", ranks: 0, misc: 0, isClass: false }
     ];
 
     let sessionLogs = [];
@@ -650,7 +665,7 @@
         if (video) { video.pause(); }
         isWakeLockActive = false;
         updateWakeLockUI(false);
-        showToast("WakeLock: WYŁĄCZONY");
+        showToast("WakeLock: WYŁĄCZONA");
       }
     }
 
@@ -680,6 +695,7 @@
       if (!container) return;
       container.innerHTML = "";
       sessionLogs.forEach((log, idx) => {
+        const heightStyle = log.height ? `style="height: ${log.height};"` : '';
         container.innerHTML += `
           <div class="bg-zinc-800/50 p-1.5 rounded border border-zinc-700 relative">
             <div class="flex items-center gap-1 mb-1">
@@ -687,7 +703,7 @@
               <input type="text" value="${log.title}" oninput="updateSessionLog(${idx}, 'title', this.value)" class="input-field text-[9.5px] font-bold w-full py-0" placeholder="Tytuł">
               <button type="button" onclick="deleteSessionLog(${idx})" class="no-print text-red-400 hover:text-red-200 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
             </div>
-            <div><textarea rows="2" oninput="updateSessionLog(${idx}, 'notes', this.value)" class="input-field w-full text-[9.5px] leading-tight resize-y" placeholder="Notatki...">${log.notes || ''}</textarea></div>
+            <div><textarea rows="2" ${heightStyle} oninput="updateSessionLog(${idx}, 'notes', this.value)" onmouseup="updateSessionHeight(${idx}, this)" class="input-field w-full text-[9.5px] leading-tight resize-y" placeholder="Notatki...">${log.notes || ''}</textarea></div>
           </div>
         `;
       });
@@ -700,6 +716,10 @@
 
     function updateSessionLog(idx, field, val) {
       if (sessionLogs[idx]) sessionLogs[idx][field] = val;
+    }
+
+    function updateSessionHeight(idx, el) {
+      if (sessionLogs[idx]) sessionLogs[idx].height = el.style.height;
     }
 
     function deleteSessionLog(idx) {
@@ -857,6 +877,19 @@
               ${isUsed ? '✓' : ''}
             </button>`;
         }
+        
+        let spellsHTML = "";
+        if (slot.spells && slot.spells.length > 0) {
+          slot.spells.forEach((spell, sIdx) => {
+            spellsHTML += `
+              <div class="flex items-center gap-1 mt-0.5">
+                <input type="text" value="${spell}" onchange="updateSpellName(${idx}, ${sIdx}, this.value)" class="input-field w-full text-[9.5px] py-0" placeholder="Nazwa zaklęcia">
+                <button type="button" onclick="deleteSpell(${idx}, ${sIdx})" class="no-print text-red-400 px-0.5 text-[9.5px]"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            `;
+          });
+        }
+
         container.innerHTML += `
           <div class="bg-zinc-800/30 p-1.5 rounded border border-zinc-700 mb-1">
             <div class="flex flex-wrap items-center justify-between gap-1 mb-0.5">
@@ -864,7 +897,17 @@
                 <input type="text" value="${slot.levelName}" onchange="updateSpellSlotName(${idx}, this.value)" class="input-field text-[9.5px] font-bold w-16 text-zinc-200 py-0">
                 <input type="number" value="${slot.total}" min="0" max="20" onchange="updateSpellSlotTotal(${idx}, this.value)" class="input-field w-7 text-center text-[9.5px] font-bold py-0">
               </div>
-              <div class="flex items-center gap-0.5 flex-wrap">${boxesHTML}</div>
+              <div class="flex items-center gap-0.5 flex-wrap">
+                ${boxesHTML}
+                <button type="button" onclick="deleteSpellSlotLevel(${idx})" class="no-print text-red-400 text-xs px-0.5 ml-0.5"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="border-t border-zinc-700/50 pt-0.5 mt-0.5">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="text-[8px] font-cinzel font-bold text-zinc-400 uppercase">Zaklęcia:</span>
+                <button type="button" onclick="addSpellToLevel(${idx})" class="no-print text-[8px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-1 py-0 rounded">+ Zaklęcie</button>
+              </div>
+              <div class="space-y-0.5">${spellsHTML}</div>
             </div>
           </div>`;
       });
@@ -872,6 +915,11 @@
 
     function addSpellSlotLevel() {
       spellSlots.push({ levelName: `Poziom ${spellSlots.length}`, total: 3, used: 0, spells: [] });
+      renderSpellSlots();
+    }
+
+    function deleteSpellSlotLevel(index) {
+      spellSlots.splice(index, 1);
       renderSpellSlots();
     }
 
@@ -887,6 +935,24 @@
       if (!spellSlots[sIdx]) return;
       spellSlots[sIdx].used = (bIdx < spellSlots[sIdx].used) ? bIdx : bIdx + 1;
       renderSpellSlots();
+    }
+    function addSpellToLevel(slotIndex) {
+      if (spellSlots[slotIndex]) {
+        if (!spellSlots[slotIndex].spells) spellSlots[slotIndex].spells = [];
+        spellSlots[slotIndex].spells.push("Nowe zaklęcie");
+        renderSpellSlots();
+      }
+    }
+    function updateSpellName(slotIndex, spellIndex, val) {
+      if (spellSlots[slotIndex] && spellSlots[slotIndex].spells) {
+        spellSlots[slotIndex].spells[spellIndex] = val;
+      }
+    }
+    function deleteSpell(slotIndex, spellIndex) {
+      if (spellSlots[slotIndex] && spellSlots[slotIndex].spells) {
+        spellSlots[slotIndex].spells.splice(spellIndex, 1);
+        renderSpellSlots();
+      }
     }
 
     function calculateStats() {
@@ -961,6 +1027,11 @@
     }
 
     function collectCharacterDataObject() {
+      const liveSessionTextareas = document.querySelectorAll('#session-logs-container textarea');
+      liveSessionTextareas.forEach((ta, idx) => {
+        if (sessionLogs[idx]) sessionLogs[idx].height = ta.style.height;
+      });
+
       return {
         name: document.getElementById('char-name').value,
         race: document.getElementById('char-race').value,
