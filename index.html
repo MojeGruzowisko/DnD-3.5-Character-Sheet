@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&D 3.5 Character Sheet - v2.0</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: MedievalSharp & Cinzel & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=MedievalSharp&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cinzel: ['Cinzel', 'serif'],
+            medieval: ['MedievalSharp', 'cursive'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style id="sheet-styles">
+    /* BLOKADA ODŚWIEŻANIA GESTEM PULL-TO-REFRESH */
+    html, body {
+      overscroll-behavior-y: none;
+      background-color: #121212;
+      color: #d1d5db;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      padding: 4px 2px;
+    }
+
+    .sheet-bg {
+      background: #18181b;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
+      border: 1px solid #27272a;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* MOTYW OLED FRIENDLY v2.0 (Ciemna szarość + stonowany tekst) */
+    body.oled-mode {
+      background-color: #121212 !important;
+      color: #c0c0c0 !important;
+    }
+
+    body.oled-mode .sheet-bg {
+      background: #18181b !important;
+      border-color: #3f3f46 !important;
+      color: #d4d4d8 !important;
+    }
+
+    body.oled-mode .input-field {
+      background: rgba(24, 24, 27, 0.95) !important;
+      border-color: #52525b !important;
+      color: #e4e4e7 !important;
+    }
+    body.oled-mode .input-field:focus {
+      background: #09090b !important;
+      border-color: #a1a1aa !important;
+      box-shadow: 0 0 0 2px rgba(161, 161, 170, 0.2);
+    }
+
+    body.oled-mode .print-card,
+    body.oled-mode [class*="bg-amber-950/5"],
+    body.oled-mode [class*="bg-amber-900/10"],
+    body.oled-mode [class*="bg-purple-950/5"],
+    body.oled-mode [class*="bg-white/"] {
+      background-color: #202024 !important;
+      border-color: #2f2f35 !important;
+      color: #d4d4d8 !important;
+    }
+
+    body.oled-mode h1, body.oled-mode h2, body.oled-mode h3, 
+    body.oled-mode span, body.oled-mode label, body.oled-mode th {
+      color: #d4d4d8 !important;
+    }
+    body.oled-mode table tr {
+      border-color: #2f2f35 !important;
+    }
+
+    .input-field {
+      background: rgba(30, 30, 35, 0.8);
+      border: 1px solid #52525b;
+      border-radius: 0.25rem;
+      padding: 0.1rem 0.25rem;
+      font-weight: 600;
+      color: #e4e4e7;
+      transition: all 0.2s;
+    }
+    .input-field:focus {
+      background: #18181b;
+      outline: none;
+      border-color: #a1a1aa;
+      box-shadow: 0 0 0 2px rgba(161, 161, 170, 0.2);
+    }
+
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      @page { size: A4 portrait; margin: 3mm; }
+      body * { visibility: hidden !important; }
+      .sheet-bg, .sheet-bg * { visibility: visible !important; }
+      body { background: #fff !important; color: #000 !important; }
+      .no-print, header, footer { display: none !important; }
+      .sheet-bg {
+        position: absolute !important; left: 0 !important; top: 0 !important;
+        width: 100% !important; margin: 0 !important; padding: 1mm !important;
+        box-shadow: none !important; background: #fff !important; border: none !important; font-size: 7.5pt !important;
+      }
+      .input-field { border: none !important; background: transparent !important; color: #000 !important; }
+    }
+  </style>
+</head>
+<body class="font-sans min-h-screen py-1 px-1 oled-mode">
+
+  <video id="wakelock-video" muted loop playsinline style="display:none; width:1px; height:1px;">
+    <source src="data:video/mp4;base64,AAAAAGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAhtZGF0AAACrgYFfxj/4QAJ" type="video/mp4">
+  </video>
+
+  <input type="file" id="import-file-input" accept=".sigil" style="display: none;" onchange="importFromFile(event)">
+
+  <!-- Top Navigation & Compact Header -->
+  <header id="sheet-header" class="no-print max-w-6xl mx-auto mb-2 bg-[#18181b] border border-zinc-700/60 rounded-xl px-3 py-2 shadow-2xl flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2.5 overflow-hidden">
+      <div id="header-avatar" class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-600 flex items-center justify-center text-zinc-300 font-cinzel font-bold text-base shadow shrink-0">
+        ?
+      </div>
+      <div class="truncate">
+        <h1 class="font-cinzel text-sm sm:text-base font-bold text-zinc-200 truncate leading-tight">D&D 3.5 Sheet v2.0</h1>
+        <p id="header-subtitle" class="text-[10px] text-zinc-400 truncate">Nowa Postać</p>
+      </div>
+    </div>
+
+    <!-- ROZWIJANE MENU (DROPDOWN) -->
+    <div class="relative">
+      <button onclick="toggleMenuDropdown(event)" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-600 rounded-lg font-cinzel font-bold text-xs shadow flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-bars text-zinc-300"></i> Menu
+      </button>
+
+      <!-- Panel rozwijany -->
+      <div id="menu-dropdown-panel" class="hidden absolute right-0 mt-2 w-48 bg-[#18181b] border border-zinc-700 rounded-xl shadow-2xl py-1.5 z-50 flex flex-col gap-1 px-1.5">
+        <button onclick="exportToFile(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
+          <i class="fa-solid fa-file-arrow-down text-emerald-400 w-4"></i> Zapisz plik (.sigil)
+        </button>
+        <button onclick="document.getElementById('import-file-input').click(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
+          <i class="fa-solid fa-file-arrow-up text-amber-400 w-4"></i> Wczytaj plik
+        </button>
+        <button onclick="toggleWakeLock(); closeMenuDropdown();" id="btn-wakelock" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
+          <i class="fa-solid fa-eye text-blue-400 w-4" id="wakelock-icon"></i> <span id="wakelock-text">WakeLock</span>
+        </button>
+        <button onclick="openResetConfirmModal(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-red-300 rounded-lg text-xs flex items-center gap-2 transition">
+          <i class="fa-solid fa-rotate-left w-4"></i> Wyczyść kartę
+        </button>
+        <button onclick="printCharacterSheet(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
+          <i class="fa-solid fa-file-pdf text-purple-400 w-4"></i> Drukuj / PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CHARACTER SHEET CONTAINER -->
+  <main id="character-sheet-main" class="sheet-bg max-w-6xl mx-auto rounded-xl p-2 sm:p-3 shadow-2xl relative">
+    
+    <!-- 1. DANE POSTACI -->
+    <section class="print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-2 mb-1.5">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div class="md:col-span-2 space-y-1">
+          <div>
+            <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Imię Postaci</label>
+            <input type="text" id="char-name" oninput="calculateStats()" class="input-field w-full text-sm font-bold font-cinzel py-0" placeholder="np. Imię postaci">
+          </div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <div>
+              <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Rasa</label>
+              <input type="text" id="char-race" oninput="calculateStats()" class="input-field w-full text-sm font-bold font-cinzel py-0" placeholder="Rasa">
+            </div>
+            <div>
+              <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Klasa</label>
+              <input type="text" id="char-class" oninput="calculateStats()" class="input-field w-full text-sm font-bold font-cinzel py-0" placeholder="Klasa">
+            </div>
+            <div>
+              <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Poziom</label>
+              <input type="number" id="char-level" value="1" oninput="calculateStats()" class="input-field w-full text-center text-sm font-bold font-cinzel py-0">
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div>
+            <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Charakter</label>
+            <input type="text" id="char-alignment" class="input-field w-full text-sm font-bold font-cinzel py-0" placeholder="np. Praworządny Dobry">
+          </div>
+          <div>
+            <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Bóstwo</label>
+            <input type="text" id="char-deity" class="input-field w-full text-sm font-bold font-cinzel py-0" placeholder="Bóstwo">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="grid grid-cols-2 gap-1.5">
+            <div>
+              <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Rozmiar</label>
+              <input type="text" id="char-size" class="input-field w-full text-sm font-bold font-cinzel text-center py-0" placeholder="Średni">
+            </div>
+            <div>
+              <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Szybkość</label>
+              <input type="text" id="char-speed" class="input-field w-full text-sm font-bold font-cinzel text-center py-0" placeholder="30 ft">
+            </div>
+          </div>
+          <div>
+            <label class="block font-cinzel text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Punkty Doświadczenia (XP)</label>
+            <input type="text" id="char-xp" class="input-field w-full text-sm font-bold font-cinzel py-0" placeholder="0">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CECHY GŁÓWNE I STATYSTYKI BOJOWE -->
+    <section class="print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5 mb-1.5 space-y-1">
+      <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 flex items-center justify-between">
+        <span><i class="fa-solid fa-dumbbell text-zinc-400 mr-1"></i>Cechy Główne i Statystyki Bojowe</span>
+      </h2>
+
+      <!-- RZĄD 1 -->
+      <div class="grid grid-cols-12 gap-1.5 items-center">
+        <div class="col-span-7 grid grid-cols-3 gap-1.5">
+          <div class="flex flex-col items-center justify-between bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700">
+            <span class="font-cinzel font-bold text-[8.5px] text-zinc-400">SIŁA</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="str-score" value="10" oninput="calculateStats()" class="input-field w-6 text-center font-bold text-[10px] py-0">
+              <span id="str-mod" class="font-cinzel font-bold text-zinc-200 text-[10px] w-6 text-center bg-zinc-800 rounded border border-zinc-700 py-0">+0</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-between bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700">
+            <span class="font-cinzel font-bold text-[8.5px] text-zinc-400">ZRĘCZ.</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="dex-score" value="10" oninput="calculateStats()" class="input-field w-6 text-center font-bold text-[10px] py-0">
+              <span id="dex-mod" class="font-cinzel font-bold text-zinc-200 text-[10px] w-6 text-center bg-zinc-800 rounded border border-zinc-700 py-0">+0</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-between bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700">
+            <span class="font-cinzel font-bold text-[8.5px] text-zinc-400">KOND.</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="con-score" value="10" oninput="calculateStats()" class="input-field w-6 text-center font-bold text-[10px] py-0">
+              <span id="con-mod" class="font-cinzel font-bold text-zinc-200 text-[10px] w-6 text-center bg-zinc-800 rounded border border-zinc-700 py-0">+0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-1 flex justify-center"><div class="h-5 w-[1px] bg-zinc-700"></div></div>
+
+        <div class="col-span-4 grid grid-cols-2 gap-1">
+          <div class="bg-zinc-800/40 border border-zinc-700 rounded p-0.5 text-center flex flex-col justify-center">
+            <span class="block font-cinzel text-[7px] font-bold text-zinc-400 uppercase leading-none mb-0.5">HP</span>
+            <div class="flex items-center justify-center gap-0.5">
+              <input type="number" id="hp-current" value="0" class="input-field w-7 text-center text-[10px] font-bold text-zinc-200 py-0">
+              <span class="text-zinc-500 font-bold text-[10px]">/</span>
+              <input type="number" id="hp-max" value="0" class="input-field w-7 text-center text-[10px] font-bold text-zinc-200 py-0">
+            </div>
+          </div>
+          <div class="bg-zinc-800/40 border border-zinc-700 rounded p-0.5 text-center flex flex-col justify-center">
+            <span class="block font-cinzel text-[7px] font-bold text-zinc-400 uppercase leading-none mb-0.5">AC</span>
+            <div class="flex flex-col items-center justify-center gap-0.5">
+              <span id="ac-total" class="font-cinzel font-black text-xs text-zinc-200">10</span>
+              <span class="text-[7px] text-zinc-400">D:<span id="ac-touch">10</span>|B:<span id="ac-flat">10</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RZĄD 2 -->
+      <div class="grid grid-cols-12 gap-1.5 items-center">
+        <div class="col-span-7 grid grid-cols-3 gap-1.5">
+          <div class="flex flex-col items-center justify-between bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700">
+            <span class="font-cinzel font-bold text-[8.5px] text-zinc-400">INT</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="int-score" value="10" oninput="calculateStats()" class="input-field w-6 text-center font-bold text-[10px] py-0">
+              <span id="int-mod" class="font-cinzel font-bold text-zinc-200 text-[10px] w-6 text-center bg-zinc-800 rounded border border-zinc-700 py-0">+0</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-between bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700">
+            <span class="font-cinzel font-bold text-[8.5px] text-zinc-400">ROZTR.</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="wis-score" value="10" oninput="calculateStats()" class="input-field w-6 text-center font-bold text-[10px] py-0">
+              <span id="wis-mod" class="font-cinzel font-bold text-zinc-200 text-[10px] w-6 text-center bg-zinc-800 rounded border border-zinc-700 py-0">+0</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-between bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700">
+            <span class="font-cinzel font-bold text-[8.5px] text-zinc-400">CHARYZ.</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="cha-score" value="10" oninput="calculateStats()" class="input-field w-6 text-center font-bold text-[10px] py-0">
+              <span id="cha-mod" class="font-cinzel font-bold text-zinc-200 text-[10px] w-6 text-center bg-zinc-800 rounded border border-zinc-700 py-0">+0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-1 flex justify-center"><div class="h-5 w-[1px] bg-zinc-700"></div></div>
+
+        <div class="col-span-4 grid grid-cols-2 gap-1">
+          <div class="bg-zinc-800/40 border border-zinc-700 rounded p-0.5 text-center flex flex-col justify-center">
+            <span class="block font-cinzel text-[7px] font-bold text-zinc-400 uppercase leading-none mb-0.5">BAB / Zw.</span>
+            <div class="flex items-center justify-center gap-0.5">
+              <input type="number" id="bab-input" value="0" oninput="calculateStats()" class="input-field w-5 text-center text-[9px] font-bold text-zinc-200 py-0">
+              <span class="text-zinc-500 font-bold text-[9px]">/</span>
+              <span id="grapple-stat" class="font-cinzel font-bold text-[9px] text-zinc-200">+0</span>
+            </div>
+          </div>
+          <div class="bg-zinc-800/40 border border-zinc-700 rounded p-0.5 text-center flex flex-col justify-center">
+            <span class="block font-cinzel text-[7px] font-bold text-zinc-400 uppercase leading-none mb-0.5">Inicjatywa</span>
+            <div class="flex flex-col items-center justify-center gap-0.5 text-[9px]">
+              <span id="init-stat" class="font-cinzel font-black text-zinc-200">+0</span>
+              <span class="text-[7px] text-zinc-400"><span id="init-dex-display">+0</span>+<input type="number" id="init-misc" value="0" oninput="calculateStats()" class="input-field w-4 text-center text-[7px] py-0"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RZUTY OBRONNE -->
+      <div class="border-t border-zinc-700 pt-1">
+        <div class="text-[8px] font-cinzel font-bold text-zinc-400 uppercase mb-0.5">Rzuty Obronne (Baza + Różne = Suma)</div>
+        <div class="grid grid-cols-3 gap-1 text-center">
+          <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
+            <div class="text-[7.5px] font-bold text-zinc-400 uppercase">Wytrwałość</div>
+            <div class="flex items-center justify-center gap-0.5 text-[8.5px]">
+              <input type="number" id="save-fort-base" value="0" oninput="calculateStats()" class="input-field w-5 text-center font-bold py-0">
+              <span>+</span>
+              <input type="number" id="save-fort-misc" value="0" oninput="calculateStats()" class="input-field w-5 text-center py-0">
+              <span>=</span>
+              <span id="save-fort" class="font-cinzel font-black text-[10px] text-zinc-200">+0</span>
+            </div>
+          </div>
+          <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
+            <div class="text-[7.5px] font-bold text-zinc-400 uppercase">Refleks</div>
+            <div class="flex items-center justify-center gap-0.5 text-[8.5px]">
+              <input type="number" id="save-ref-base" value="0" oninput="calculateStats()" class="input-field w-5 text-center font-bold py-0">
+              <span>+</span>
+              <input type="number" id="save-ref-misc" value="0" oninput="calculateStats()" class="input-field w-5 text-center py-0">
+              <span>=</span>
+              <span id="save-ref" class="font-cinzel font-black text-[10px] text-zinc-200">+0</span>
+            </div>
+          </div>
+          <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
+            <div class="text-[7.5px] font-bold text-zinc-400 uppercase">Wola</div>
+            <div class="flex items-center justify-center gap-0.5 text-[8.5px]">
+              <input type="number" id="save-will-base" value="0" oninput="calculateStats()" class="input-field w-5 text-center font-bold py-0">
+              <span>+</span>
+              <input type="number" id="save-will-misc" value="0" oninput="calculateStats()" class="input-field w-5 text-center py-0">
+              <span>=</span>
+              <span id="save-will" class="font-cinzel font-black text-[10px] text-zinc-200">+0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POZOSTAŁE SEKCJE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-1.5 mb-1.5">
+      <section class="lg:col-span-7 space-y-1.5">
+        <div class="print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5">
+          <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 flex items-center justify-between">
+            <span><i class="fa-solid fa-shield-halved text-zinc-400 mr-1"></i>Ataki i Broń</span>
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[9.5px] border-collapse">
+              <thead>
+                <tr class="border-b border-zinc-700 font-cinzel text-zinc-400">
+                  <th class="py-0 px-1">Broń</th>
+                  <th class="py-0 px-1 text-center w-11">Atak</th>
+                  <th class="py-0 px-1 text-center w-12">Obr.</th>
+                  <th class="py-0 px-1 text-center w-12">Kryt</th>
+                  <th class="py-0 px-1">Zasięg / Typ</th>
+                  <th class="py-0 px-1 text-center w-4 no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="weapons-tbody" class="divide-y divide-zinc-800"></tbody>
+            </table>
+          </div>
+          <button type="button" onclick="addWeaponRow()" class="no-print mt-1 text-[9.5px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-2 py-0.5 rounded">
+            + Dodaj broń
+          </button>
+        </div>
+
+        <div class="print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5">
+          <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 flex items-center justify-between">
+            <span><i class="fa-solid fa-user-shield text-zinc-400 mr-1"></i>Pancerze i Przedmioty Ochronne</span>
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[9.5px] border-collapse">
+              <thead>
+                <tr class="border-b border-zinc-700 font-cinzel text-zinc-400">
+                  <th class="py-0 px-1">Nazwa Pancerza / Przedmiotu</th>
+                  <th class="py-0 px-1 text-center w-8">AC</th>
+                  <th class="py-0 px-1 text-center w-10">MaxDex</th>
+                  <th class="py-0 px-1 text-center w-8">Kara</th>
+                  <th class="py-0 px-1 text-center w-9">Odb.</th>
+                  <th class="py-0 px-1 text-center w-11">Typ</th>
+                  <th class="py-0 px-1 text-center w-4 no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="armors-tbody" class="divide-y divide-zinc-800"></tbody>
+            </table>
+          </div>
+          <button type="button" onclick="addArmorRow()" class="no-print mt-1 text-[9.5px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-2 py-0.5 rounded">
+            + Dodaj pancerz / osłonę
+          </button>
+        </div>
+      </section>
+
+      <section class="lg:col-span-5 print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5 space-y-1">
+        <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 flex items-center justify-between">
+          <span><i class="fa-solid fa-scroll text-zinc-400 mr-1"></i>Atuty & Cechy Klasowe</span>
+        </h2>
+        <div>
+          <textarea id="feats-list" rows="10" class="input-field w-full text-[9.5px] leading-tight font-sans resize-y" placeholder="Wpisz atuty, zdolności rasowe lub specjalne..."></textarea>
+        </div>
+      </section>
+    </div>
+
+    <!-- SPELLS SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-1.5 mb-1.5">
+      <section class="lg:col-span-12 print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5">
+        <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 flex items-center justify-between">
+          <span><i class="fa-solid fa-hat-wizard text-zinc-400 mr-1"></i>Znane Czary & Komórki Magiczne</span>
+          <button type="button" onclick="addSpellSlotLevel()" class="no-print text-[9px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-1.5 py-0.5 rounded transition">
+            + Poziom Czarów
+          </button>
+        </h2>
+        <div id="spell-slots-container" class="grid grid-cols-1 md:grid-cols-2 gap-1.5"></div>
+      </section>
+    </div>
+
+    <!-- SKILLS TABLE -->
+    <section class="print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5 mb-1.5">
+      <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 flex items-center justify-between">
+        <span><i class="fa-solid fa-list-check text-zinc-400 mr-1"></i>Umiejętności (Skills)</span>
+        <span class="text-[9px] text-zinc-400">Zaznacz [✓] klasowe</span>
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-[9.5px] border-collapse">
+          <thead>
+            <tr class="border-b border-zinc-700 font-cinzel text-zinc-400">
+              <th class="py-0 px-1 text-center w-5">Klas.</th>
+              <th class="py-0 px-1">Umiejętność</th>
+              <th class="py-0 px-1 text-center w-12">Cecha</th>
+              <th class="py-0 px-1 text-center w-9">Rangi</th>
+              <th class="py-0 px-1 text-center w-9">Różne</th>
+              <th class="py-0 px-1 text-center w-9">SUMA</th>
+              <th class="py-0 px-1 text-center w-4 no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="skills-tbody" class="divide-y divide-zinc-800"></tbody>
+        </table>
+      </div>
+      <button type="button" onclick="addCustomSkill()" class="no-print mt-1 text-[9.5px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-2 py-0.5 rounded">
+        + Dodaj nową umiejętność
+      </button>
+    </section>
+
+    <!-- EQUIPMENT & LORE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-1.5">
+      <section class="lg:col-span-5 print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5">
+        <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 flex items-center justify-between">
+          <span><i class="fa-solid fa-coins text-zinc-400 mr-1"></i>Ekwipunek i Majątek</span>
+        </h2>
+        <div class="grid grid-cols-3 gap-1 text-center mb-1">
+          <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
+            <span class="block text-[7.5px] font-bold text-zinc-400">ZŁOTO (GP)</span>
+            <input type="number" id="gp-val" value="0" class="input-field w-full text-center text-[9.5px] font-bold py-0">
+          </div>
+          <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
+            <span class="block text-[7.5px] font-bold text-zinc-400">SREBRO (SP)</span>
+            <input type="number" id="sp-val" value="0" class="input-field w-full text-center text-[9.5px] font-bold py-0">
+          </div>
+          <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
+            <span class="block text-[7.5px] font-bold text-zinc-400">MIEDŹ (CP)</span>
+            <input type="number" id="cp-val" value="0" class="input-field w-full text-center text-[9.5px] font-bold py-0">
+          </div>
+        </div>
+        <div>
+          <label class="block font-cinzel text-[8.5px] font-bold text-zinc-400 uppercase mb-0.5">Ekwipunek & Narzędzia</label>
+          <textarea id="inventory-list" rows="5" class="input-field w-full text-[9.5px] leading-tight font-sans resize-y"></textarea>
+        </div>
+      </section>
+
+      <section class="lg:col-span-7 print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5">
+        <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 uppercase tracking-wider">
+          <i class="fa-solid fa-book-bookmark text-zinc-400 mr-1"></i>Historia i Azyl
+        </h2>
+        <div class="space-y-1">
+          <div>
+            <label class="block font-cinzel text-[8.5px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Azyl (Baza)</label>
+            <textarea id="lore-base" rows="2" class="input-field w-full text-[9.5px] leading-tight resize-y" placeholder="Opis bazy..."></textarea>
+          </div>
+          <div>
+            <label class="block font-cinzel text-[8.5px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Historia Postaci</label>
+            <textarea id="lore-past" rows="3" class="input-field w-full text-[9.5px] leading-tight resize-y" placeholder="Przeszłość..."></textarea>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- SESJE -->
+    <section class="print-card bg-zinc-900/40 border border-zinc-700/50 rounded-lg p-1.5 mb-1.5 mt-1.5">
+      <h2 class="font-cinzel font-bold text-[10px] text-zinc-300 border-b border-zinc-700 pb-0.5 mb-1 flex items-center justify-between">
+        <span><i class="fa-solid fa-feather-pointed text-zinc-400 mr-1"></i>Zapiski z Sesji & Dziennik Przygód</span>
+        <button type="button" onclick="addSessionLogEntry()" class="no-print text-[9px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold px-1.5 py-0.5 rounded transition">
+          + Nowy Wpis
+        </button>
+      </h2>
+      <div id="session-logs-container" class="space-y-1.5"></div>
+    </section>
+
+    <!-- POPUP POTWIERDZENIA -->
+    <div id="reset-confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center z-50 hidden no-print">
+      <div class="bg-[#18181b] border-2 border-zinc-700 rounded-xl p-4 max-w-xs w-full text-center shadow-2xl relative">
+        <h3 class="font-cinzel font-bold text-sm text-zinc-200 mb-1">Wyczyścić formularz?</h3>
+        <p class="text-[11px] text-zinc-400 mb-4">Czy na pewno chcesz wyczyścić wszystkie pola karty?</p>
+        <div class="flex gap-2 justify-center">
+          <button type="button" onclick="confirmResetForm()" class="px-4 py-1.5 bg-red-900/80 hover:bg-red-800 text-red-100 font-cinzel font-bold text-xs rounded shadow">Tak</button>
+          <button type="button" onclick="closeResetConfirmModal()" class="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-cinzel font-bold text-xs rounded">Anuluj</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="no-print mt-3 pt-1 border-t border-zinc-800 text-center text-[9px] text-zinc-500 font-cinzel">
+      D&D 3.5 Character Sheet v2.0 - B.Grabowski 2026
+    </footer>
+  </main>
+
+  <!-- JAVASCRIPT -->
+  <script id="main-logic">
+    let skillsList = [
+      { name: "Akrobatyka (Tumble)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Blefowanie (Bluff)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Ciche Poruszanie (Move Silently)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Czarostwo (Spellcraft)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Dyplomacja (Diplomacy)", stat: "CHA", ranks: 0, misc: 0, isClass: false },
+      { name: "Koncentracja (Concentration)", stat: "CON", ranks: 0, misc: 0, isClass: false },
+      { name: "Leczenie (Heal)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Nasłuchiwanie (Listen)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Pływanie (Swim)", stat: "STR", ranks: 0, misc: 0, isClass: false },
+      { name: "Przeszukiwanie (Search)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Rzemiosło (Craft)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Skakanie (Jump)", stat: "STR", ranks: 0, misc: 0, isClass: false },
+      { name: "Spostrzegawczość (Spot)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Sztuka Przetrwania (Survival)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Ukrywanie Się (Hide)", stat: "DEX", ranks: 0, misc: 0, isClass: false },
+      { name: "Wiedza (Knowledge)", stat: "INT", ranks: 0, misc: 0, isClass: false },
+      { name: "Wspinaczka (Climb)", stat: "STR", ranks: 0, misc: 0, isClass: false },
+      { name: "Wyczucie Pobudek (Sense Motive)", stat: "WIS", ranks: 0, misc: 0, isClass: false },
+      { name: "Zastraszanie (Intimidate)", stat: "CHA", ranks: 0, misc: 0, isClass: false }
+    ];
+
+    let sessionLogs = [];
+    let weapons = [];
+    let armors = [];
+    let spellSlots = [];
+
+    // --- OBSŁUGA ROZWIJANEGO MENU ---
+    function toggleMenuDropdown(event) {
+      event.stopPropagation();
+      const panel = document.getElementById('menu-dropdown-panel');
+      if (panel) {
+        panel.classList.toggle('hidden');
+      }
+    }
+
+    function closeMenuDropdown() {
+      const panel = document.getElementById('menu-dropdown-panel');
+      if (panel) {
+        panel.classList.add('hidden');
+      }
+    }
+
+    window.addEventListener('click', () => {
+      closeMenuDropdown();
+    });
+
+    // --- WAKELOCK ---
+    let wakeLockSentinel = null;
+    let isWakeLockActive = false;
+
+    async function toggleWakeLock() {
+      const icon = document.getElementById('wakelock-icon');
+      const text = document.getElementById('wakelock-text');
+      const video = document.getElementById('wakelock-video');
+
+      if (!isWakeLockActive) {
+        try {
+          if ('wakeLock' in navigator) {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            wakeLockSentinel.addEventListener('release', () => {
+              isWakeLockActive = false;
+              updateWakeLockUI(false);
+            });
+          }
+          if (video) { await video.play().catch(() => {}); }
+          isWakeLockActive = true;
+          updateWakeLockUI(true);
+          showToast("WakeLock: WŁĄCZONY");
+        } catch (err) {
+          showToast("Błąd WakeLock");
+        }
+      } else {
+        if (wakeLockSentinel) { await wakeLockSentinel.release(); wakeLockSentinel = null; }
+        if (video) { video.pause(); }
+        isWakeLockActive = false;
+        updateWakeLockUI(false);
+        showToast("WakeLock: WYŁĄCZONY");
+      }
+    }
+
+    function updateWakeLockUI(active) {
+      const icon = document.getElementById('wakelock-icon');
+      const text = document.getElementById('wakelock-text');
+      if (active) {
+        if (icon) icon.className = "fa-solid fa-eye-slash text-amber-400 w-4";
+        if (text) text.innerText = "WakeLock (Aktywny)";
+      } else {
+        if (icon) icon.className = "fa-solid fa-eye text-blue-400 w-4";
+        if (text) text.innerText = "WakeLock";
+      }
+    }
+
+    function getMod(score) {
+      const s = parseInt(score) || 10;
+      return Math.floor((s - 10) / 2);
+    }
+
+    function formatMod(mod) {
+      return mod >= 0 ? `+${mod}` : `${mod}`;
+    }
+
+    function renderSessionLogs() {
+      const container = document.getElementById('session-logs-container');
+      if (!container) return;
+      container.innerHTML = "";
+      sessionLogs.forEach((log, idx) => {
+        container.innerHTML += `
+          <div class="bg-zinc-800/50 p-1.5 rounded border border-zinc-700 relative">
+            <div class="flex items-center gap-1 mb-1">
+              <input type="text" value="${log.sessionNo}" oninput="updateSessionLog(${idx}, 'sessionNo', this.value)" class="input-field text-[9.5px] font-bold w-16 text-center py-0" placeholder="Sesja">
+              <input type="text" value="${log.title}" oninput="updateSessionLog(${idx}, 'title', this.value)" class="input-field text-[9.5px] font-bold w-full py-0" placeholder="Tytuł">
+              <button type="button" onclick="deleteSessionLog(${idx})" class="no-print text-red-400 hover:text-red-200 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div><textarea rows="2" oninput="updateSessionLog(${idx}, 'notes', this.value)" class="input-field w-full text-[9.5px] leading-tight resize-y" placeholder="Notatki...">${log.notes || ''}</textarea></div>
+          </div>
+        `;
+      });
+    }
+
+    function addSessionLogEntry() {
+      sessionLogs.push({ sessionNo: `Sesja ${sessionLogs.length + 1}`, title: "Nowa przygoda", notes: "" });
+      renderSessionLogs();
+    }
+
+    function updateSessionLog(idx, field, val) {
+      if (sessionLogs[idx]) sessionLogs[idx][field] = val;
+    }
+
+    function deleteSessionLog(idx) {
+      sessionLogs.splice(idx, 1);
+      renderSessionLogs();
+    }
+
+    function renderSkills() {
+      const tbody = document.getElementById('skills-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      const statsOptions = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+
+      skillsList.forEach((sk, idx) => {
+        let statSelectHTML = `<select id="sk-stat-${idx}" onchange="updateSkillData(${idx})" class="input-field text-[9.5px] text-center py-0">`;
+        statsOptions.forEach(st => {
+          statSelectHTML += `<option value="${st}" ${sk.stat === st ? 'selected' : ''}>${st}</option>`;
+        });
+        statSelectHTML += `</select>`;
+
+        tbody.innerHTML += `
+          <tr class="${sk.isClass ? 'bg-zinc-800/30 font-semibold' : ''}">
+            <td class="py-0 px-1 text-center"><input type="checkbox" id="sk-class-${idx}" onchange="updateSkillData(${idx})" ${sk.isClass ? 'checked' : ''} class="w-3 h-3 accent-zinc-500 cursor-pointer"></td>
+            <td class="py-0 px-1"><input type="text" id="sk-name-${idx}" oninput="updateSkillData(${idx})" value="${sk.name}" class="input-field w-full font-bold text-zinc-200 text-[9.5px] py-0"></td>
+            <td class="py-0 px-1 text-center">${statSelectHTML}</td>
+            <td class="py-0 px-1 text-center"><input type="number" id="sk-rank-${idx}" value="${sk.ranks}" oninput="updateSkillData(${idx})" class="input-field w-8 text-center text-[9.5px] font-bold py-0"></td>
+            <td class="py-0 px-1 text-center"><input type="number" id="sk-misc-${idx}" value="${sk.misc}" oninput="updateSkillData(${idx})" class="input-field w-8 text-center text-[9.5px] py-0"></td>
+            <td class="py-0 px-1 text-center font-bold text-zinc-200 font-cinzel text-xs" id="sk-total-${idx}">+0</td>
+            <td class="py-0 px-1 text-center no-print">${sk.isCustom ? `<button type="button" onclick="deleteCustomSkill(${idx})" class="text-red-400 hover:text-red-200 text-xs px-1"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
+          </tr>
+        `;
+      });
+      calculateStats();
+    }
+
+    function addCustomSkill() {
+      skillsList.push({ name: "Własna Umiejętność", stat: "INT", ranks: 0, misc: 0, isClass: false, isCustom: true });
+      renderSkills();
+    }
+
+    function deleteCustomSkill(idx) {
+      if (skillsList[idx]?.isCustom) {
+        skillsList.splice(idx, 1);
+        renderSkills();
+      }
+    }
+
+    function updateSkillData(idx) {
+      if (skillsList[idx]) {
+        skillsList[idx].isClass = document.getElementById(`sk-class-${idx}`)?.checked || false;
+        skillsList[idx].name = document.getElementById(`sk-name-${idx}`)?.value || "";
+        skillsList[idx].stat = document.getElementById(`sk-stat-${idx}`)?.value || "DEX";
+        skillsList[idx].ranks = parseInt(document.getElementById(`sk-rank-${idx}`)?.value) || 0;
+        skillsList[idx].misc = parseInt(document.getElementById(`sk-misc-${idx}`)?.value) || 0;
+      }
+      calculateStats();
+    }
+
+    function renderWeapons() {
+      const tbody = document.getElementById('weapons-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      weapons.forEach((w, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="py-0 px-1"><input type="text" id="w-name-${idx}" oninput="syncWeaponData(${idx})" class="input-field w-full font-bold text-zinc-200 text-[9.5px] py-0" value="${w.name}"></td>
+            <td class="py-0 px-1"><input type="text" id="w-atkl-${idx}" oninput="syncWeaponData(${idx})" class="input-field w-full text-center font-bold text-zinc-300 text-[9.5px] py-0" value="${w.attack}"></td>
+            <td class="py-0 px-1"><input type="text" id="w-dmg-${idx}" oninput="syncWeaponData(${idx})" class="input-field w-full text-center text-[9.5px] py-0" value="${w.damage}"></td>
+            <td class="py-0 px-1"><input type="text" id="w-crit-${idx}" oninput="syncWeaponData(${idx})" class="input-field w-full text-center text-[9.5px] py-0" value="${w.crit}"></td>
+            <td class="py-0 px-1"><input type="text" id="w-notes-${idx}" oninput="syncWeaponData(${idx})" class="input-field w-full text-zinc-400 text-[9.5px] py-0" value="${w.notes}"></td>
+            <td class="py-0 px-1 text-center no-print"><button type="button" onclick="deleteWeaponRow(${idx})" class="text-red-400 text-xs px-1"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function syncWeaponData(idx) {
+      if (weapons[idx]) {
+        weapons[idx].name = document.getElementById(`w-name-${idx}`)?.value || "";
+        weapons[idx].attack = document.getElementById(`w-atkl-${idx}`)?.value || "";
+        weapons[idx].damage = document.getElementById(`w-dmg-${idx}`)?.value || "";
+        weapons[idx].crit = document.getElementById(`w-crit-${idx}`)?.value || "";
+        weapons[idx].notes = document.getElementById(`w-notes-${idx}`)?.value || "";
+      }
+    }
+
+    function addWeaponRow() {
+      weapons.push({ name: "Broń", attack: "+0", damage: "1d6", crit: "20/x2", notes: "" });
+      renderWeapons();
+    }
+
+    function deleteWeaponRow(index) {
+      weapons.splice(index, 1);
+      renderWeapons();
+    }
+
+    function renderArmors() {
+      const tbody = document.getElementById('armors-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      armors.forEach((a, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="py-0 px-1"><input type="text" id="armor-name-${idx}" oninput="updateArmorData(${idx})" class="input-field w-full font-bold text-zinc-200 text-[9.5px] py-0" value="${a.name}"></td>
+            <td class="py-0 px-1"><input type="number" id="armor-ac-${idx}" oninput="updateArmorData(${idx})" class="input-field w-full text-center font-bold text-zinc-200 text-[9.5px] py-0" value="${a.acBonus}"></td>
+            <td class="py-0 px-1"><input type="number" id="armor-maxdex-${idx}" oninput="updateArmorData(${idx})" class="input-field w-full text-center text-[9.5px] py-0" value="${a.maxDex}"></td>
+            <td class="py-0 px-1"><input type="number" id="armor-pen-${idx}" oninput="updateArmorData(${idx})" class="input-field w-full text-center text-zinc-400 text-[9.5px] py-0" value="${a.checkPen}"></td>
+            <td class="py-0 px-1"><input type="number" id="armor-defl-${idx}" oninput="updateArmorData(${idx})" class="input-field w-full text-center font-bold text-[9.5px] py-0" value="${a.deflection}"></td>
+            <td class="py-0 px-1 text-center">
+              <select id="armor-shield-${idx}" onchange="updateArmorData(${idx})" class="input-field text-[8.5px] py-0">
+                <option value="false" ${!a.isShield ? 'selected' : ''}>Zbroja</option>
+                <option value="true" ${a.isShield ? 'selected' : ''}>Tarcza</option>
+              </select>
+            </td>
+            <td class="py-0 px-1 text-center no-print"><button type="button" onclick="deleteArmorRow(${idx})" class="text-red-400 text-xs px-1"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+        `;
+      });
+      calculateStats();
+    }
+
+    function addArmorRow() {
+      armors.push({ name: "Pancerz", acBonus: 0, maxDex: 99, checkPen: 0, deflection: 0, isShield: false });
+      renderArmors();
+    }
+
+    function deleteArmorRow(index) {
+      armors.splice(index, 1);
+      renderArmors();
+    }
+
+    function updateArmorData(idx) {
+      if (armors[idx]) {
+        armors[idx].name = document.getElementById(`armor-name-${idx}`)?.value || "";
+        armors[idx].acBonus = parseInt(document.getElementById(`armor-ac-${idx}`)?.value) || 0;
+        armors[idx].maxDex = parseInt(document.getElementById(`armor-maxdex-${idx}`)?.value) ?? 99;
+        armors[idx].checkPen = parseInt(document.getElementById(`armor-pen-${idx}`)?.value) || 0;
+        armors[idx].deflection = parseInt(document.getElementById(`armor-defl-${idx}`)?.value) || 0;
+        armors[idx].isShield = document.getElementById(`armor-shield-${idx}`)?.value === "true";
+      }
+      calculateStats();
+    }
+
+    function renderSpellSlots() {
+      const container = document.getElementById('spell-slots-container');
+      if (!container) return;
+      container.innerHTML = "";
+      spellSlots.forEach((slot, idx) => {
+        let boxesHTML = "";
+        for (let i = 0; i < slot.total; i++) {
+          const isUsed = i < slot.used;
+          boxesHTML += `
+            <button type="button" onclick="toggleSpellSlot(${idx}, ${i})" 
+                    class="w-3.5 h-3.5 rounded border border-zinc-600 flex items-center justify-center font-bold text-[9px] transition cursor-pointer ${isUsed ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-900 text-transparent'}">
+              ${isUsed ? '✓' : ''}
+            </button>`;
+        }
+        container.innerHTML += `
+          <div class="bg-zinc-800/30 p-1.5 rounded border border-zinc-700 mb-1">
+            <div class="flex flex-wrap items-center justify-between gap-1 mb-0.5">
+              <div class="flex items-center gap-1">
+                <input type="text" value="${slot.levelName}" onchange="updateSpellSlotName(${idx}, this.value)" class="input-field text-[9.5px] font-bold w-16 text-zinc-200 py-0">
+                <input type="number" value="${slot.total}" min="0" max="20" onchange="updateSpellSlotTotal(${idx}, this.value)" class="input-field w-7 text-center text-[9.5px] font-bold py-0">
+              </div>
+              <div class="flex items-center gap-0.5 flex-wrap">${boxesHTML}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function addSpellSlotLevel() {
+      spellSlots.push({ levelName: `Poziom ${spellSlots.length}`, total: 3, used: 0, spells: [] });
+      renderSpellSlots();
+    }
+
+    function updateSpellSlotName(idx, val) { if (spellSlots[idx]) spellSlots[idx].levelName = val; }
+    function updateSpellSlotTotal(idx, val) {
+      if (spellSlots[idx]) {
+        spellSlots[idx].total = parseInt(val) || 0;
+        if (spellSlots[idx].used > spellSlots[idx].total) spellSlots[idx].used = spellSlots[idx].total;
+      }
+      renderSpellSlots();
+    }
+    function toggleSpellSlot(sIdx, bIdx) {
+      if (!spellSlots[sIdx]) return;
+      spellSlots[sIdx].used = (bIdx < spellSlots[sIdx].used) ? bIdx : bIdx + 1;
+      renderSpellSlots();
+    }
+
+    function calculateStats() {
+      const charName = document.getElementById('char-name')?.value || 'Brak imienia';
+      const charRace = document.getElementById('char-race')?.value || 'Rasa';
+      const charClass = document.getElementById('char-class')?.value || 'Klasa';
+      const charLevel = document.getElementById('char-level')?.value || '1';
+      
+      const headerSubtitle = document.getElementById('header-subtitle');
+      if (headerSubtitle) headerSubtitle.innerText = `${charName} (${charRace}) | Poz. ${charLevel} ${charClass}`;
+      const headerAvatar = document.getElementById('header-avatar');
+      if (headerAvatar) headerAvatar.innerText = charName.trim().length > 0 ? charName.trim()[0].toUpperCase() : '?';
+
+      const str = parseInt(document.getElementById('str-score')?.value) || 10;
+      const dex = parseInt(document.getElementById('dex-score')?.value) || 10;
+      const con = parseInt(document.getElementById('con-score')?.value) || 10;
+      const int = parseInt(document.getElementById('int-score')?.value) || 10;
+      const wis = parseInt(document.getElementById('wis-score')?.value) || 10;
+      const cha = parseInt(document.getElementById('cha-score')?.value) || 10;
+
+      const strM = getMod(str), dexM = getMod(dex), conM = getMod(con), intM = getMod(int), wisM = getMod(wis), chaM = getMod(cha);
+
+      document.getElementById('str-mod').innerText = formatMod(strM);
+      document.getElementById('dex-mod').innerText = formatMod(dexM);
+      document.getElementById('con-mod').innerText = formatMod(conM);
+      document.getElementById('int-mod').innerText = formatMod(intM);
+      document.getElementById('wis-mod').innerText = formatMod(wisM);
+      document.getElementById('cha-mod').innerText = formatMod(chaM);
+
+      const fortBase = parseInt(document.getElementById('save-fort-base')?.value) || 0;
+      const fortMisc = parseInt(document.getElementById('save-fort-misc')?.value) || 0;
+      document.getElementById('save-fort').innerText = formatMod(fortBase + conM + fortMisc);
+
+      const refBase = parseInt(document.getElementById('save-ref-base')?.value) || 0;
+      const refMisc = parseInt(document.getElementById('save-ref-misc')?.value) || 0;
+      document.getElementById('save-ref').innerText = formatMod(refBase + dexM + refMisc);
+
+      const willBase = parseInt(document.getElementById('save-will-base')?.value) || 0;
+      const willMisc = parseInt(document.getElementById('save-will-misc')?.value) || 0;
+      document.getElementById('save-will').innerText = formatMod(willBase + wisM + willMisc);
+
+      let totalArmorBonus = 0, totalDefl = 0, lowestMaxDex = 99;
+      armors.forEach(a => {
+        totalArmorBonus += (a.acBonus || 0);
+        totalDefl += (a.deflection || 0);
+        if (a.maxDex < lowestMaxDex) lowestMaxDex = a.maxDex;
+      });
+      const effectiveDex = Math.min(dexM, lowestMaxDex);
+
+      document.getElementById('ac-total').innerText = 10 + totalArmorBonus + effectiveDex + totalDefl;
+      document.getElementById('ac-touch').innerText = 10 + effectiveDex;
+      document.getElementById('ac-flat').innerText = 10 + totalArmorBonus + totalDefl;
+
+      const bab = parseInt(document.getElementById('bab-input')?.value) || 0;
+      document.getElementById('grapple-stat').innerText = formatMod(bab + strM);
+      const initMisc = parseInt(document.getElementById('init-misc')?.value) || 0;
+      document.getElementById('init-dex-display').innerText = formatMod(dexM);
+      document.getElementById('init-stat').innerText = formatMod(dexM + initMisc);
+
+      const statMods = { STR: strM, DEX: dexM, CON: conM, INT: intM, WIS: wisM, CHA: chaM };
+      skillsList.forEach((sk, idx) => {
+        const ranks = parseInt(document.getElementById(`sk-rank-${idx}`)?.value) || 0;
+        const misc = parseInt(document.getElementById(`sk-misc-${idx}`)?.value) || 0;
+        const total = (statMods[sk.stat] || 0) + ranks + misc;
+        const totalElem = document.getElementById(`sk-total-${idx}`);
+        if (totalElem) totalElem.innerText = formatMod(total);
+      });
+    }
+
+    function collectCharacterDataObject() {
+      return {
+        name: document.getElementById('char-name').value,
+        race: document.getElementById('char-race').value,
+        class: document.getElementById('char-class').value,
+        level: document.getElementById('char-level').value,
+        alignment: document.getElementById('char-alignment').value,
+        deity: document.getElementById('char-deity').value,
+        size: document.getElementById('char-size').value,
+        speed: document.getElementById('char-speed').value,
+        xp: document.getElementById('char-xp').value,
+        str: document.getElementById('str-score').value,
+        dex: document.getElementById('dex-score').value,
+        con: document.getElementById('con-score').value,
+        int: document.getElementById('int-score').value,
+        wis: document.getElementById('wis-score').value,
+        cha: document.getElementById('cha-score').value,
+        fortBase: document.getElementById('save-fort-base').value,
+        fortMisc: document.getElementById('save-fort-misc').value,
+        refBase: document.getElementById('save-ref-base').value,
+        refMisc: document.getElementById('save-ref-misc').value,
+        willBase: document.getElementById('save-will-base').value,
+        willMisc: document.getElementById('save-will-misc').value,
+        bab: document.getElementById('bab-input').value,
+        initMisc: document.getElementById('init-misc').value,
+        hpCurrent: document.getElementById('hp-current').value,
+        hpMax: document.getElementById('hp-max').value,
+        gp: document.getElementById('gp-val').value,
+        sp: document.getElementById('sp-val').value,
+        cp: document.getElementById('cp-val').value,
+        feats: document.getElementById('feats-list').value,
+        inventory: document.getElementById('inventory-list').value,
+        loreBase: document.getElementById('lore-base').value,
+        lorePast: document.getElementById('lore-past').value,
+        skills: skillsList, spellSlots, weapons, armors, sessionLogs
+      };
+    }
+
+    async function exportToFile() {
+      try {
+        const charData = collectCharacterDataObject();
+        const jsonString = JSON.stringify(charData, null, 2);
+        const charName = document.getElementById('char-name')?.value || 'postac';
+        const defaultFilename = `${charName.replace(/[^a-zA-Z0-9]/g, '_')}.sigil`;
+
+        if (window.showSaveFilePicker) {
+          const handle = await window.showSaveFilePicker({ suggestedName: defaultFilename });
+          const writable = await handle.createWritable();
+          await writable.write(jsonString);
+          await writable.close();
+          showToast("Zapisano plik .sigil!");
+          return;
+        }
+
+        const blob = new Blob([jsonString], { type: 'application/octet-stream;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = defaultFilename;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        showToast("Zapisano plik .sigil!");
+      } catch (e) { if (e.name !== 'AbortError') showToast("Błąd zapisu!"); }
+    }
+
+    function importFromFile(event) {
+      const reader = new FileReader();
+      if (event.target.files[0]) {
+        reader.readAsText(event.target.files[0], "UTF-8");
+        reader.onload = function (e) {
+          try {
+            const d = JSON.parse(e.target.result);
+            document.getElementById('char-name').value = d.name || "";
+            document.getElementById('char-race').value = d.race || "";
+            document.getElementById('char-class').value = d.class || "";
+            document.getElementById('char-level').value = d.level || 1;
+            document.getElementById('char-alignment').value = d.alignment || "";
+            document.getElementById('char-deity').value = d.deity || "";
+            document.getElementById('char-size').value = d.size || "";
+            document.getElementById('char-speed').value = d.speed || "";
+            document.getElementById('char-xp').value = d.xp || "";
+            document.getElementById('str-score').value = d.str || 10;
+            document.getElementById('dex-score').value = d.dex || 10;
+            document.getElementById('con-score').value = d.con || 10;
+            document.getElementById('int-score').value = d.int || 10;
+            document.getElementById('wis-score').value = d.wis || 10;
+            document.getElementById('cha-score').value = d.cha || 10;
+            document.getElementById('save-fort-base').value = d.fortBase || 0;
+            document.getElementById('save-fort-misc').value = d.fortMisc || 0;
+            document.getElementById('save-ref-base').value = d.refBase || 0;
+            document.getElementById('save-ref-misc').value = d.refMisc || 0;
+            document.getElementById('save-will-base').value = d.willBase || 0;
+            document.getElementById('save-will-misc').value = d.willMisc || 0;
+            document.getElementById('bab-input').value = d.bab || 0;
+            document.getElementById('init-misc').value = d.initMisc || 0;
+            document.getElementById('hp-current').value = d.hpCurrent || 0;
+            document.getElementById('hp-max').value = d.hpMax || 0;
+            document.getElementById('gp-val').value = d.gp || 0;
+            document.getElementById('sp-val').value = d.sp || 0;
+            document.getElementById('cp-val').value = d.cp || 0;
+            document.getElementById('feats-list').value = d.feats || "";
+            document.getElementById('inventory-list').value = d.inventory || "";
+            document.getElementById('lore-base').value = d.loreBase || "";
+            document.getElementById('lore-past').value = d.lorePast || "";
+
+            if (d.skills) skillsList = d.skills;
+            if (d.spellSlots) spellSlots = d.spellSlots;
+            if (d.weapons) weapons = d.weapons;
+            if (d.armors) armors = d.armors;
+            if (d.sessionLogs) sessionLogs = d.sessionLogs;
+
+            renderSkills(); renderSpellSlots(); renderWeapons(); renderArmors(); renderSessionLogs(); calculateStats();
+            showToast("Wczytano postać!");
+          } catch (err) { showToast("Błąd odczytu pliku!"); }
+        };
+      }
+    }
+
+    function openResetConfirmModal() { document.getElementById('reset-confirm-modal').classList.remove('hidden'); }
+    function closeResetConfirmModal() { document.getElementById('reset-confirm-modal').classList.add('hidden'); }
+    function confirmResetForm() {
+      closeResetConfirmModal();
+      document.getElementById('char-name').value = "";
+      document.getElementById('char-class').value = "";
+      document.getElementById('char-level').value = 1;
+      document.getElementById('char-race').value = "";
+      document.getElementById('char-alignment').value = "";
+      document.getElementById('char-deity').value = "";
+      document.getElementById('char-size').value = "";
+      document.getElementById('char-speed').value = "";
+      document.getElementById('char-xp').value = "";
+      document.getElementById('str-score').value = 10;
+      document.getElementById('dex-score').value = 10;
+      document.getElementById('con-score').value = 10;
+      document.getElementById('int-score').value = 10;
+      document.getElementById('wis-score').value = 10;
+      document.getElementById('cha-score').value = 10;
+      document.getElementById('save-fort-base').value = 0;
+      document.getElementById('save-fort-misc').value = 0;
+      document.getElementById('save-ref-base').value = 0;
+      document.getElementById('save-ref-misc').value = 0;
+      document.getElementById('save-will-base').value = 0;
+      document.getElementById('save-will-misc').value = 0;
+      document.getElementById('bab-input').value = 0;
+      document.getElementById('init-misc').value = 0;
+      document.getElementById('hp-current').value = 0;
+      document.getElementById('hp-max').value = 0;
+      document.getElementById('gp-val').value = 0;
+      document.getElementById('sp-val').value = 0;
+      document.getElementById('cp-val').value = 0;
+      document.getElementById('feats-list').value = "";
+      document.getElementById('inventory-list').value = "";
+      document.getElementById('lore-base').value = "";
+      document.getElementById('lore-past').value = "";
+      skillsList.forEach(sk => { sk.ranks = 0; sk.misc = 0; sk.isClass = false; });
+      skillsList = skillsList.filter(sk => !sk.isCustom);
+      renderSkills(); spellSlots = []; renderSpellSlots(); weapons = []; renderWeapons(); armors = []; renderArmors(); sessionLogs = []; renderSessionLogs();
+      showToast("Wyczyszczono formularz.");
+    }
+
+    function printCharacterSheet() { window.print(); }
+
+    function showToast(msg) {
+      let toast = document.getElementById('custom-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'custom-toast';
+        toast.className = 'fixed bottom-5 right-5 bg-zinc-900 text-zinc-200 border border-zinc-700 px-4 py-2 rounded-xl shadow-2xl z-50 font-cinzel text-xs font-bold transition-opacity duration-300 pointer-events-none no-print';
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg; toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+    }
+
+    // Inicjalizacja komponentów
+    renderSkills();
+    renderWeapons();
+    renderArmors();
+    renderSpellSlots();
+    renderSessionLogs();
+    calculateStats();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
