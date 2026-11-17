@@ -35,10 +35,11 @@
     /* BLOKADA ODŚWIEŻANIA GESTEM PULL-TO-REFRESH */
     html, body {
       overscroll-behavior-y: none;
-      background-color: #121212;
-      color: #d1d5db;
+      background-color: #0f172a;
+      color: #1c1917;
       margin: 0;
       padding: 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     body {
@@ -46,21 +47,25 @@
     }
 
     .sheet-bg {
-      background: #18181b;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
-      border: 1px solid #27272a;
-      transition: background 0.3s ease, color 0.3s ease;
+      background: #f5eedb;
+      background-image: radial-gradient(#e2d5b6 0.75px, #f5eedb 0.75px);
+      background-size: 15px 15px;
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), inset 0 0 100px rgba(120, 53, 15, 0.12);
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
 
     /* MOTYW OLED FRIENDLY v2.0 (Ciemna szarość + stonowany tekst) */
     body.oled-mode {
       background-color: #121212 !important;
+      background-image: none !important;
       color: #c0c0c0 !important;
     }
 
     body.oled-mode .sheet-bg {
       background: #18181b !important;
+      background-image: none !important;
       border-color: #3f3f46 !important;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.9) !important;
       color: #d4d4d8 !important;
     }
 
@@ -94,19 +99,19 @@
     }
 
     .input-field {
-      background: rgba(30, 30, 35, 0.8);
-      border: 1px solid #52525b;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid #a16207;
       border-radius: 0.25rem;
       padding: 0.1rem 0.25rem;
       font-weight: 600;
-      color: #e4e4e7;
+      color: #451a03;
       transition: all 0.2s;
     }
     .input-field:focus {
-      background: #18181b;
+      background: #ffffff;
       outline: none;
-      border-color: #a1a1aa;
-      box-shadow: 0 0 0 2px rgba(161, 161, 170, 0.2);
+      border-color: #8b1e1e;
+      box-shadow: 0 0 0 2px rgba(139, 30, 30, 0.2);
     }
 
     input[type=number]::-webkit-inner-spin-button, 
@@ -161,12 +166,15 @@
       </button>
 
       <!-- Panel rozwijany -->
-      <div id="menu-dropdown-panel" class="hidden absolute right-0 mt-2 w-48 bg-[#18181b] border border-zinc-700 rounded-xl shadow-2xl py-1.5 z-50 flex flex-col gap-1 px-1.5">
+      <div id="menu-dropdown-panel" class="hidden absolute right-0 mt-2 w-52 bg-[#18181b] border border-zinc-700 rounded-xl shadow-2xl py-1.5 z-50 flex flex-col gap-1 px-1.5">
         <button onclick="exportToFile(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
           <i class="fa-solid fa-file-arrow-down text-emerald-400 w-4"></i> Zapisz plik (.sigil)
         </button>
         <button onclick="document.getElementById('import-file-input').click(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
           <i class="fa-solid fa-file-arrow-up text-amber-400 w-4"></i> Wczytaj plik
+        </button>
+        <button onclick="toggleOledMode(); closeMenuDropdown();" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
+          <i class="fa-solid fa-moon text-amber-300 w-4" id="oled-icon"></i> <span id="oled-text">Przełącz motyw (Jasny/OLED)</span>
         </button>
         <button onclick="toggleWakeLock(); closeMenuDropdown();" id="btn-wakelock" class="w-full text-left px-3 py-1.5 bg-zinc-800/60 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs flex items-center gap-2 transition">
           <i class="fa-solid fa-eye text-blue-400 w-4" id="wakelock-icon"></i> <span id="wakelock-text">WakeLock</span>
@@ -340,14 +348,14 @@
 
       <!-- RZUTY OBRONNE -->
       <div class="border-t border-zinc-700 pt-1">
-        <div class="text-[8px] font-cinzel font-bold text-zinc-400 uppercase mb-0.5">Rzuty Obronne (Baza + Różne = Suma)</div>
+        <div class="text-[8px] font-cinzel font-bold text-zinc-400 uppercase mb-0.5">Rzuty Obronne (Baza + Cechy + Różne = Suma)</div>
         <div class="grid grid-cols-3 gap-1 text-center">
           <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
             <div class="text-[7.5px] font-bold text-zinc-400 uppercase">Wytrwałość</div>
             <div class="flex items-center justify-center gap-0.5 text-[8.5px]">
-              <input type="number" id="save-fort-base" value="0" oninput="calculateStats()" class="input-field w-5 text-center font-bold py-0">
-              <span>+</span>
-              <input type="number" id="save-fort-misc" value="0" oninput="calculateStats()" class="input-field w-5 text-center py-0">
+              <input type="number" id="save-fort-base" value="0" oninput="calculateStats()" class="input-field w-4 text-center font-bold py-0" title="Baza">
+              <span>+<span id="save-fort-con">0</span>+</span>
+              <input type="number" id="save-fort-misc" value="0" oninput="calculateStats()" class="input-field w-4 text-center py-0" title="Różne">
               <span>=</span>
               <span id="save-fort" class="font-cinzel font-black text-[10px] text-zinc-200">+0</span>
             </div>
@@ -355,9 +363,9 @@
           <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
             <div class="text-[7.5px] font-bold text-zinc-400 uppercase">Refleks</div>
             <div class="flex items-center justify-center gap-0.5 text-[8.5px]">
-              <input type="number" id="save-ref-base" value="0" oninput="calculateStats()" class="input-field w-5 text-center font-bold py-0">
-              <span>+</span>
-              <input type="number" id="save-ref-misc" value="0" oninput="calculateStats()" class="input-field w-5 text-center py-0">
+              <input type="number" id="save-ref-base" value="0" oninput="calculateStats()" class="input-field w-4 text-center font-bold py-0" title="Baza">
+              <span>+<span id="save-ref-dex">0</span>+</span>
+              <input type="number" id="save-ref-misc" value="0" oninput="calculateStats()" class="input-field w-4 text-center py-0" title="Różne">
               <span>=</span>
               <span id="save-ref" class="font-cinzel font-black text-[10px] text-zinc-200">+0</span>
             </div>
@@ -365,9 +373,9 @@
           <div class="bg-zinc-800/40 p-0.5 rounded border border-zinc-700">
             <div class="text-[7.5px] font-bold text-zinc-400 uppercase">Wola</div>
             <div class="flex items-center justify-center gap-0.5 text-[8.5px]">
-              <input type="number" id="save-will-base" value="0" oninput="calculateStats()" class="input-field w-5 text-center font-bold py-0">
-              <span>+</span>
-              <input type="number" id="save-will-misc" value="0" oninput="calculateStats()" class="input-field w-5 text-center py-0">
+              <input type="number" id="save-will-base" value="0" oninput="calculateStats()" class="input-field w-4 text-center font-bold py-0" title="Baza">
+              <span>+<span id="save-will-wis">0</span>+</span>
+              <input type="number" id="save-will-misc" value="0" oninput="calculateStats()" class="input-field w-4 text-center py-0" title="Różne">
               <span>=</span>
               <span id="save-will" class="font-cinzel font-black text-[10px] text-zinc-200">+0</span>
             </div>
@@ -546,7 +554,7 @@
     </div>
 
     <footer class="no-print mt-3 pt-1 border-t border-zinc-800 text-center text-[9px] text-zinc-500 font-cinzel">
-      D&D 3.5 Character Sheet v2.0 - B.Grabowski 2026
+      D&D 3.5 Character Sheet v2.0
     </footer>
   </main>
 
@@ -579,25 +587,38 @@
     let armors = [];
     let spellSlots = [];
 
+    // --- OBSŁUGA MOTYWU OLED / JASNY ---
+    function toggleOledMode() {
+      const isOled = document.body.classList.toggle('oled-mode');
+      const icon = document.getElementById('oled-icon');
+      const text = document.getElementById('oled-text');
+
+      if (isOled) {
+        if (icon) icon.className = "fa-solid fa-sun text-amber-300 w-4";
+        if (text) text.innerText = "Motyw: Jasny";
+        localStorage.setItem('dnd_oled_mode', 'true');
+        showToast("Włączono tryb OLED");
+      } else {
+        if (icon) icon.className = "fa-solid fa-moon text-amber-300 w-4";
+        if (text) text.innerText = "Motyw: OLED";
+        localStorage.setItem('dnd_oled_mode', 'false');
+        showToast("Przywrócono jasny motyw");
+      }
+    }
+
     // --- OBSŁUGA ROZWIJANEGO MENU ---
     function toggleMenuDropdown(event) {
       event.stopPropagation();
       const panel = document.getElementById('menu-dropdown-panel');
-      if (panel) {
-        panel.classList.toggle('hidden');
-      }
+      if (panel) panel.classList.toggle('hidden');
     }
 
     function closeMenuDropdown() {
       const panel = document.getElementById('menu-dropdown-panel');
-      if (panel) {
-        panel.classList.add('hidden');
-      }
+      if (panel) panel.classList.add('hidden');
     }
 
-    window.addEventListener('click', () => {
-      closeMenuDropdown();
-    });
+    window.addEventListener('click', () => { closeMenuDropdown(); });
 
     // --- WAKELOCK ---
     let wakeLockSentinel = null;
@@ -895,16 +916,20 @@
       document.getElementById('wis-mod').innerText = formatMod(wisM);
       document.getElementById('cha-mod').innerText = formatMod(chaM);
 
+      // Rzuty obronne poprawione obliczenia (Baza + Cechy + Różne = Suma)
       const fortBase = parseInt(document.getElementById('save-fort-base')?.value) || 0;
       const fortMisc = parseInt(document.getElementById('save-fort-misc')?.value) || 0;
+      document.getElementById('save-fort-con').innerText = formatMod(conM);
       document.getElementById('save-fort').innerText = formatMod(fortBase + conM + fortMisc);
 
       const refBase = parseInt(document.getElementById('save-ref-base')?.value) || 0;
       const refMisc = parseInt(document.getElementById('save-ref-misc')?.value) || 0;
+      document.getElementById('save-ref-dex').innerText = formatMod(dexM);
       document.getElementById('save-ref').innerText = formatMod(refBase + dexM + refMisc);
 
       const willBase = parseInt(document.getElementById('save-will-base')?.value) || 0;
       const willMisc = parseInt(document.getElementById('save-will-misc')?.value) || 0;
+      document.getElementById('save-will-wis').innerText = formatMod(wisM);
       document.getElementById('save-will').innerText = formatMod(willBase + wisM + willMisc);
 
       let totalArmorBonus = 0, totalDefl = 0, lowestMaxDex = 99;
@@ -1108,7 +1133,15 @@
       setTimeout(() => { toast.style.opacity = '0'; }, 2500);
     }
 
-    // Inicjalizacja komponentów
+    // Sprawdź zapisany motyw OLED
+    if (localStorage.getItem('dnd_oled_mode') === 'false') {
+      document.body.classList.remove('oled-mode');
+      const icon = document.getElementById('oled-icon');
+      const text = document.getElementById('oled-text');
+      if (icon) icon.className = "fa-solid fa-moon text-amber-300 w-4";
+      if (text) text.innerText = "Motyw: OLED";
+    }
+
     renderSkills();
     renderWeapons();
     renderArmors();
