@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dnd-sheet-v1';
+const CACHE_NAME = 'd&d-sheet-v1';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
