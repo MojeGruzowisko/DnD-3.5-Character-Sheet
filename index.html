@@ -2,8 +2,9 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
+  <meta name="author" content="Bartosz Grabowski">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D&D 3.5 Character Sheet Creator - v1.9 (OLED & WakeLock)</title>
+  <title>D&D 3.5 Character Sheet Creator - v1.92 (OLED & WakeLock)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -232,7 +233,7 @@
         ?
       </div>
       <div>
-        <h1 class="font-cinzel text-lg sm:text-xl font-bold text-amber-400 leading-tight">D&D 3.5 Character Sheet Creator - v1.9</h1>
+        <h1 class="font-cinzel text-lg sm:text-xl font-bold text-amber-400 leading-tight">D&D 3.5 Character Sheet Creator - v1.92</h1>
         <p id="header-subtitle" class="text-xs text-slate-400">Nowa Postać</p>
       </div>
     </div>
@@ -244,14 +245,14 @@
       <button onclick="document.getElementById('import-file-input').click()" class="px-3 py-1.5 bg-amber-900 hover:bg-amber-800 text-amber-200 border border-amber-600/60 rounded-lg font-cinzel font-bold text-xs shadow transition flex items-center gap-1">
         <i class="fa-solid fa-file-arrow-up text-amber-400"></i> Wczytaj plik
       </button>
-      <!-- PRZYCISK POBIERANIA CZYSTEJ KARTY (TYLKO DLA CIEBIE, USUWANY W KLONIE) -->
+      <!-- PRZYCISK POBIERANIA CZYSTEJ KARTY (TYLKO DLA CIEBIE, USUWANY W KLONIE) 
       <button id="btn-download-html" onclick="downloadHtmlFile()" class="px-3 py-1.5 bg-purple-900 hover:bg-purple-800 text-purple-200 border border-purple-600/60 rounded-lg font-cinzel font-bold text-xs shadow transition flex items-center gap-1">
         <i class="fa-solid fa-download text-purple-300"></i> Pobierz Czystą Kartę (HTML)
-      </button>
-      <!-- PRZYCISK TRYBU OLED -->
+      </button> -->
+      <!-- PRZYCISK TRYBU OLED 
       <button id="btn-oled-mode" onclick="toggleOledMode()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-amber-600/40 rounded-lg font-cinzel font-bold text-xs shadow transition flex items-center gap-1" title="Przełącz tryb OLED / Jasny">
         <i class="fa-solid fa-moon" id="oled-icon"></i> <span id="oled-text">OLED</span>
-      </button>
+      </button>-->
       <!-- PRZYCISK BLOKADY WYGASZANIA EKRANU -->
       <button id="btn-wakelock" onclick="toggleWakeLock()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-lg text-xs transition flex items-center gap-1" title="Zapobiegaj wygaszaniu ekranu">
         <i class="fa-solid fa-eye" id="wakelock-icon"></i> <span id="wakelock-text">WakeLock</span>
